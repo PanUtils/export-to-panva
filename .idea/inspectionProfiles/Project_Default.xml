@@ -1,0 +1,39 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="workflow.rules.filter_data.temp" />
+          <option value="workflow.rules.filter_data.data" />
+          <option value="workflow.rules.extract_data.data" />
+          <option value="workflow.rules.extract_data.directory" />
+          <option value="workflow.Snakefile.expand" />
+          <option value="workflow.Snakefile.data" />
+          <option value="workflow.rules.extract_data.workflow" />
+          <option value="workflow.scripts.fasta_contents.snakemake" />
+          <option value="workflow.rules.statistics.expand" />
+          <option value="workflow.rules.statistics.data" />
+          <option value="workflow.scripts.combine_statistics.snakemake" />
+          <option value="workflow.scripts.gff_contents.snakemake" />
+          <option value="workflow.rules.extract_data.touch" />
+          <option value="workflow.rules.functions.touch" />
+          <option value="workflow.rules.functions.workflow" />
+          <option value="workflow.rules.sequences.temp" />
+          <option value="workflow.rules.annotations.data" />
+          <option value="workflow.rules.annotations.temp" />
+          <option value="workflow.rules.locations.expand" />
+          <option value="workflow.rules.locations.data" />
+          <option value="workflow.rules.sequences.scratch" />
+          <option value="workflow.rules.annotations.scratch" />
+          <option value="workflow.rules.statistics.scratch" />
+          <option value="workflow.rules.pantools_phased.touch" />
+          <option value="workflow.rules.pantools_phased.workflow" />
+          <option value="workflow.rules.pantools_msa.touch" />
+          <option value="workflow.rules.pantools_msa.workflow" />
+          <option value="workflow.rules.functions.data" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
