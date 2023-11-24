@@ -37,7 +37,7 @@ def gene_classification(gene_class_path, filtered_id_list):
 
     classified_df.columns = classified_df.columns.str.replace(' ', '_').str.lower()
     # print(classified_df.columns)
-    hom_classified = classified_df[classified_df['homology_group_id'].isin(clean_id_list)][['homology_group_id', 'class']]
+    hom_classified = classified_df[classified_df['homology_group_node_id'].isin(clean_id_list)][['homology_group_node_id', 'class']]
 
     hom_classified.columns = ['id', 'classification']
     hom_classified['id'] = hom_classified['id'].astype(str)
@@ -88,11 +88,11 @@ def create_homologies(pangenome_path, panva_p, df_aligned_filt, hom_classified, 
                 grp_id = line.rsplit(" ", 1)[1]
                 grp_id = grp_id.strip()
                 grp_id_list.append(grp_id)
-            if line.startswith("All gene names:"):
-                gene_name = line.split("names:")[1]
+            if line.startswith("All gene names"):
+                gene_name = line.split(": ")[1]
                 gene_name = gene_name.strip('\n')
                 gene_name_list.append(gene_name)
-            if line.startswith("All functions:"):
+            if line.startswith("All functions"):
                 all_func = line.split(": ", 1)[1]
                 all_func = all_func.strip('\n')
                 if all_func == '':
