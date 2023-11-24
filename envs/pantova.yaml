@@ -1,6 +1,6 @@
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
 dependencies:
   - numpy=1.23.5
   - pandas=1.5.2
