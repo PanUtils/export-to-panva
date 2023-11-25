@@ -29,7 +29,7 @@ def genome_annotation(single_path, panva_p, msa_type):
     if msa_type == 'msa_per_group_var':
         hom_trimm_inf_path = os.path.join(single_path, "input/var_trimmed.info")
     else:
-        hom_trimm_inf_path = os.path.join(single_path, "input/trimmed.info")
+        hom_trimm_inf_path = os.path.join(single_path, "input/nuc_trimmed.info")
 
     with open(hom_trimm_inf_path, 'r') as trim:
         trim_lines = trim.readlines()

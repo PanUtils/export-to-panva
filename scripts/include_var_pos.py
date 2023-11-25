@@ -43,6 +43,7 @@ def create_var_pos_df(single_id, panva_p, df_all_pos, pheno=None, version='old')
         if "Informative" not in df_var_pos.columns:
             #print(hom_id)
             df_all_pos.to_csv(os.path.join(hom_id_out, 'alignments.csv'), index=False)
+            df_var_pos.to_csv(os.path.join(hom_id_out, 'variable.csv'), index=False)
         else:
             df_var_pos = df_var_pos.rename(columns={"Position": "position", "Informative": "informative"})
             df_var_pos['informative'] = [True if i == 'I' else False for i in df_var_pos['informative']]
