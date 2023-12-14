@@ -51,7 +51,7 @@ def collect_data(pan_grp_path, selection):
     pre_excl_num = len(grp_ids)
     logging.info("Number of groups selected before check of exclusion based on trimming is: {}".format(pre_excl_num))
     # check if any homology id groups are excluded based on trimming.
-    if os.path.exists(hom_w_exc_trim):
+    if os.path.exists(hom_w_exc_trim) & os.path.getsize(hom_w_exc_trim) > 0:
         with open(hom_w_exc_trim, 'r') as ex_t:
             for line in ex_t:
                 remove_id = [entry.strip() for entry in line.split(',')]
