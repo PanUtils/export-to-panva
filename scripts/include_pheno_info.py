@@ -99,7 +99,7 @@ def acc_genome_metamerge(acc_meta_df, df_phenos):
 
 
 # Ran in own pool
-def hom_group_pheno(single_id_path, panva_path, df_phenos, df_seq_info):
+def hom_group_pheno(single_id_path, panva_path, df_phenos, df_seq_info, var_meta):
     """
     Combines the individual sequence information with the corresponding meta/phenotype data.
 
@@ -116,10 +116,23 @@ def hom_group_pheno(single_id_path, panva_path, df_phenos, df_seq_info):
 
     # merge information
     # hom_grp_pheno = hom_mrna_id_gnr.merge(df_phenos, on='genome_nr', how='left')
-    hom_grp_pheno = pd.merge(df_seq_info[['genome_nr', 'mRNA_id']], df_phenos, on='genome_nr')
+    hom_grp_pheno = pd.merge(df_seq_info[['genome_nr', 'mRNA_id']], df_phenos, on='genome_nr', how='left')
 
-    hom_grp_pheno['genome_nr'] = hom_grp_pheno['genome_nr'].astype(int)
+    if var_meta is not None:
+        hom_grp_pheno = add_var_pheno(hom_grp_pheno, var_meta)
 
     hom_grp_pheno.to_csv(os.path.join(hom_grp_pheno_pva, 'metadata.csv'), index=False)
 
     return hom_grp_pheno
+
+
+def add_var_pheno (group_meta, var_meta):
+    var_meta_dict = var_meta.set_index('id').T.to_dict('list')
+    var_meta_columns =  list(var_meta.columns.values)[1::]
+    for ind in group_meta.index:
+        genome = group_meta['genome_nr'][ind]
+        if "|" in genome:
+            id = genome.split("|")[1]
+            for i, value in enumerate(var_meta_dict[id]):
+                group_meta[var_meta_columns[i]][ind] = value
+    return group_meta

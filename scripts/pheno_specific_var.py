@@ -16,7 +16,6 @@ import logging
 from functools import reduce
 # Function(s):
 
-
 def add_pheno_specificity(single_id_path, al_pos, phenos_df, pheno_var=None):
     """
 

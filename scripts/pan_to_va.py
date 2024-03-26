@@ -155,7 +155,6 @@ def main():
         print('Include phenotype and metadata')
         # makes df for all genomes linking meta and pheno data.
         df_phenos = pheno_meta_maker(pangenome_path)
-        # print(df_phenos)
     else:
         df_phenos = None
     # check if accession meta data is given/exists
@@ -163,22 +162,16 @@ def main():
         print('Include phenotype and metadata of accessions')
         acc_meta_df = pd.read_csv(acc_meta)
         # check if the column accession_id exists as is expected
-        acc_meta_df.rename(columns={'accession_id': 'mRNA_id'}, inplace=True, errors='raise')
     elif acc_meta == '' or acc_meta == ' ':
         acc_meta_df = None
     else:
         raise ValueError("the given path to accession meta/pheno data does not exist or is not empty in config.")
-    # if both phenodata on the ref genomes and resequenced accessions is given cross-check and merge
-    if df_phenos is not None and acc_meta_df is not None:
-        df_phenos = acc_genome_metamerge(acc_meta_df, df_phenos)
-    elif df_phenos is None and acc_meta_df is not None:
-        df_phenos = acc_meta_df
 
     print("Note progress bar*: Updates on next group start not on group done")
     with Pool(core_count) as pool_2:
         # prep_group_pheno found in run_per_group.py
         meta_info = pool_2.starmap(prep_group_pheno, tqdm.tqdm(zip(id_list_filt, repeat(panva_path), repeat(seqtyping),
-                                                         repeat(pheno_spvar), repeat(df_phenos)), total=len(id_list_filt)))
+                                                         repeat(pheno_spvar), repeat(df_phenos), repeat(acc_meta_df)), total=len(id_list_filt)))
     pool_2.close()
 
     indiv_time = datetime.now()

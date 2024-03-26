@@ -41,7 +41,6 @@ def alignment_posinfo(single_id, panva_p, all_seq_all_info, method='nuc_trimmed'
     for mrna_id in all_seq_all_info['mRNA_id']:
         # get genome number
         gnme_nr = all_seq_all_info[all_seq_all_info['mRNA_id'] == mrna_id]['genome_nr'].values[0]
-        # print(gnme_nr)
         # get sequence as nuc per elem list
         if method == 'var_trimmed_seq':
             method = 'nuc_trimmed_seq'

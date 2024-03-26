@@ -13,10 +13,11 @@ from include_pheno_info import *
 
 
 # ran in pool
-def prep_group_pheno(hom_id, panva_p, seqtype='nuc_trimmed', pheno_var=None, meta=None):
+def prep_group_pheno(hom_id, panva_p, seqtype='nuc_trimmed', pheno_var=None, meta=None, var_meta=None):
     """
     Flashes out the alignments for a homology group, by adding additional information if present.
 
+    :param var_meta: reseq phenotypes
     :param hom_id: str - path to single homology grp id in alignments/../.. .
     :param panva_p: str - full path to output dir (serves as input for PanVA).
     :param seqtype: str - define the type of sequence default 'nuc_trimmed'.
@@ -35,8 +36,9 @@ def prep_group_pheno(hom_id, panva_p, seqtype='nuc_trimmed', pheno_var=None, met
     # if both not none ADD phenometa data AND pheno specific var
     if meta is not None:
         # makes metadata.csv
-        new_thing = hom_group_pheno(hom_id, panva_p, meta, df_seq_info)
-        meta_info = alignment_posinfo(hom_id, panva_p, all_info_seq, method=seqtype, phe_var=pheno_var, meta=new_thing)
+        group_meta = hom_group_pheno(hom_id, panva_p, meta, df_seq_info, var_meta)
+
+        meta_info = alignment_posinfo(hom_id, panva_p, all_info_seq, method=seqtype, phe_var=pheno_var, meta=group_meta)
 
     # if meta is None and pheno var is None just do positions
     else:
