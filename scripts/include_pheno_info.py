@@ -134,5 +134,8 @@ def add_var_pheno (group_meta, var_meta):
         if "|" in genome:
             id = genome.split("|")[1]
             for i, value in enumerate(var_meta_dict[id]):
-                group_meta[var_meta_columns[i]][ind] = value
+                column = var_meta_columns[i]
+                if column not in group_meta.columns:
+                    group_meta[column] = pd.Series()
+                group_meta[column][ind] = value
     return group_meta
