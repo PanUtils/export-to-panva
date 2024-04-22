@@ -125,17 +125,22 @@ def hom_group_pheno(single_id_path, panva_path, df_phenos, df_seq_info, var_meta
 
     return hom_grp_pheno
 
-
 def add_var_pheno (group_meta, var_meta):
+    """
+    Adds phenotype information to resequencing data.
+
+    :param group_meta: Dataframe - phenotype dataframe for one group
+    :param var_meta: Dataframe - phenotype dataframe for resequencing accessions
+    """
     var_meta_dict = var_meta.set_index('id').T.to_dict('list')
     var_meta_columns =  list(var_meta.columns.values)[1::]
     for ind in group_meta.index:
         genome = group_meta['genome_nr'][ind]
         if "|" in genome:
             id = genome.split("|")[1]
-            for i, value in enumerate(var_meta_dict[id]):
+            for i, value in enumerate(var_meta_dict[int(id)]):
                 column = var_meta_columns[i]
                 if column not in group_meta.columns:
                     group_meta[column] = pd.Series()
-                group_meta[column][ind] = value
+                group_meta.loc[ind, column] = value
     return group_meta
