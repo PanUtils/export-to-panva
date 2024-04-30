@@ -163,7 +163,7 @@ def main():
     with Pool(core_count) as pool_2:
         # prep_group_pheno found in run_per_group.py
         meta_info = pool_2.starmap(prep_group_pheno, tqdm.tqdm(zip(id_list_filt, repeat(panva_path), repeat(seqtyping),
-                                                         repeat(pheno_spvar), repeat(df_phenos), repeat(acc_meta_df)), total=len(id_list_filt)))
+                                                         repeat(inc_pheno), repeat(df_phenos), repeat(acc_meta_df)), total=len(id_list_filt)))
     pool_2.close()
 
     indiv_time = datetime.now()
