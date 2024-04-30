@@ -107,6 +107,7 @@ def hom_group_pheno(single_id_path, panva_path, df_phenos, df_seq_info, var_meta
     :param panva_path: str - full path to output dir (serves as input for PanVA).
     :param df_phenos: Dataframe - containing all phenotype data
     :param df_seq_info: Dataframe - contains information on all the sequences
+    :param var_meta: Dataframe - phenotype dataframe for resequencing accessions
     :return: Dataframe & metadata.csv
     """
     # Get id
@@ -125,7 +126,8 @@ def hom_group_pheno(single_id_path, panva_path, df_phenos, df_seq_info, var_meta
 
     return hom_grp_pheno
 
-def add_var_pheno (group_meta, var_meta):
+
+def add_var_pheno(group_meta, var_meta):
     """
     Adds phenotype information to resequencing data.
 
@@ -133,7 +135,7 @@ def add_var_pheno (group_meta, var_meta):
     :param var_meta: Dataframe - phenotype dataframe for resequencing accessions
     """
     var_meta_dict = var_meta.set_index('id').T.to_dict('list')
-    var_meta_columns =  list(var_meta.columns.values)[1::]
+    var_meta_columns = list(var_meta.columns.values)[1::]
     for ind in group_meta.index:
         genome = group_meta['genome_nr'][ind]
         if "|" in genome:

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Author: Sander Vlugter
+# Author: Sander Vlugter, Robin van Esch
 # Start date v1: 21-12-2022
 # WUR - Bioinformatics
 # Functionality:
@@ -31,6 +31,8 @@ from pheno_specific_var import *
 from include_pheno_info import *
 from make_alignments import *
 from collect_pantools_data import *
+
+
 # Functions:
 
 
@@ -70,7 +72,6 @@ def main():
     except FileExistsError:
         pass
     panva_path = os.path.join(panva_dir_path, "homology")
-    # panva_path = os.path.join(panva_path, panva_dir_name)
     print(panva_path)
     try:
         os.mkdir(panva_path)
@@ -100,12 +101,11 @@ def main():
     msa_type = config.get('MSA', 'msa_type')
 
     if msa_type == 'msa_per_group_var':
-        print("Currently under development to add annotations of ref genomes might cause breaks")
         euk_ref = True
     else:
         euk_ref = False
 
-    if euk_ref == True:
+    if euk_ref:
         seqtyping = 'var_trimmed'
     else:
         seqtyping = 'nuc_trimmed'
@@ -115,11 +115,6 @@ def main():
 
     # PHENOMETA settings:
     inc_pheno = config.getboolean('PHENOMETA', 'pheno_info')
-    pheno_spvar = config.get('PHENOMETA', 'pheno_var')
-    if pheno_spvar == '' or pheno_spvar == ' ':
-        pheno_spvar = None
-        print("pheno_var is 'None'")
-
     acc_meta = config.get('PHENOMETA', 'reseq_meta')
 
     # GENE CLASSIFICATION SETTINGS
@@ -144,14 +139,14 @@ def main():
     # Apply the filters
     # alignment_info found in alignment_stats.py
     df_aligned, id_list_filt = filter_on_alignment(alignment_info, pan_grp_path, panva_path, min_align, min_num_memb,
-                                                  min_num_uniq)
+                                                   min_num_uniq)
 
     df_aligned.to_csv(os.path.join(panva_path, 'tmp_filtered_groups.csv'), index=False)
 
     filter_time = datetime.now()
     logging.info("Time spend gathering and filtering the pangenome data {}.".format(filter_time - start_run))
 
-    if inc_pheno == True:
+    if inc_pheno:
         print('Include phenotype and metadata')
         # makes df for all genomes linking meta and pheno data.
         df_phenos = pheno_meta_maker(pangenome_path)
@@ -161,9 +156,6 @@ def main():
     if os.path.isfile(acc_meta):
         print('Include phenotype and metadata of accessions')
         acc_meta_df = pd.read_csv(acc_meta)
-        # check if the column accession_id exists as is expected
-    elif acc_meta == '' or acc_meta == ' ':
-        acc_meta_df = None
     else:
         raise ValueError("the given path to accession meta/pheno data does not exist or is not empty in config.")
 
@@ -178,7 +170,7 @@ def main():
     logging.info('Time passed making all individual homology group files: {}'.format(indiv_time - filter_time))
     print("Creating homologies.json")
     id_class = gene_classification(gene_class_path, id_list_filt)
-    if pheno_spvar is not None:
+    if inc_pheno:
         create_homologies(pangenome_path, panva_path, df_aligned, id_class, pheno_var=meta_info)
     else:
         create_homologies(pangenome_path, panva_path, df_aligned, id_class, pheno_var=None)
@@ -192,12 +184,10 @@ def main():
                                             total=len(id_list_filt)))
     pool_3.close()
     annot_time = datetime.now()
-    logging.info('Time passed making annotation(s) files for the homology groups: {}'.format(annot_time-json_time))
+    logging.info('Time passed making annotation(s) files for the homology groups: {}'.format(annot_time - json_time))
     print("Finished making the annotation(s) files")
     # Check for trees
     print("Check if any trees are present")
-    # folders = os.listdir(pangenome_path)
-    # folders.remove('alignments')
     for folder in os.walk(pangenome_path):
         # look in all folders except for alignment too many files and no trees can be here
         if 'alignment' in folder[0]:
@@ -234,9 +224,6 @@ def main():
                 shutil.copyfile(core_snp_path, out_core_snp)
             except FileNotFoundError:
                 pass
-        # else:
-        #     for file in glob.glob(os.path.join(folder[0], '*.newick')):
-        #         shutil.copyfile(file, panva_path)
 
     final_time = datetime.now()
     print("Done")
