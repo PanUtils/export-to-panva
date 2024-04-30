@@ -23,7 +23,7 @@ def prep_group_pheno(hom_id, panva_p, seqtype='nuc_trimmed', pheno_var=None, met
     :param seqtype: str - define the type of sequence default 'nuc_trimmed'.
     :param pheno_var: bool - indicates if there is data on meta/phenotype specific variant positions.
     :param meta: optional - can be None or dataframe containing meta/phenotype data on the aligned sequences.
-    :param var_meta: Dataframe - phenotype dataframe for resequencing accessions
+    :return: meta_info - Dataframe - basis of the homologies.json
     """
 
     df_seq_info = create_seq_info(hom_id, panva_p)

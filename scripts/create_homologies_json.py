@@ -69,6 +69,9 @@ def create_homologies(pangenome_path, panva_p, df_aligned_filt, hom_classified, 
     grp_id_list = []
     gene_name_list = []
     function_list = []
+    # num_mem_list = []
+    # num_genomes_list = []
+    # protein length could still be added
 
     # extraction of information indicator
     extract_bool = False
@@ -95,8 +98,21 @@ def create_homologies(pangenome_path, panva_p, df_aligned_filt, hom_classified, 
                 if all_func == '':
                     all_func = '-'
                 function_list.append(all_func)
+            # if line.startswith('num_members:'):
+            #     # includes multi copy appearances aka should be called something like: number aligned seq
+            #     num_mem = int(line.split(": ", 1)[1])
+            #     num_mem_list.append(num_mem)
+            # if line.startswith("Found in"):
+            #     # get the back of the line
+            #     num_genome_members = line.split("in ", 1)[1]
+            #     # get just the number
+            #     num_genome_members = int(num_genome_members.split("genomes", 1)[0])
+            #     # print(num_genome_members)
+            #     num_genomes_list.append(num_genome_members)
         if line.startswith('\n'):
             extract_bool = False
+    # data_json = {"id": grp_id_list, "name": gene_name_list, "members": num_mem_list,
+    #              "all_functions": function_list, "in_num_genomes": num_genomes_list}
     data_json = {"id": grp_id_list, "name": gene_name_list, "all_functions": function_list}
 
     homologies_df = pd.DataFrame(data_json)
@@ -107,13 +123,17 @@ def create_homologies(pangenome_path, panva_p, df_aligned_filt, hom_classified, 
     base_info = pd.merge(bighomologies_df, hom_classified, on='id')
     base_info = base_info.rename(columns={'numb_members': 'members', 'align_length': 'alignment_length'})
 
+    # print(pheno_var)
     if pheno_var is not None:
         pheno_var_df = reduce(lambda df_1, df_2: pd.merge(df_1, df_2, how='outer'), pheno_var)
+        # pheno_var_df = pheno_var_df.fillna(False)
+        # print(pheno_var_df)
         base_info = pd.merge(base_info, pheno_var_df, on='id')
 
     first_col = ['id', 'alignment_length', 'members']
     other_cols = [col for col in base_info.columns if col not in first_col]
     base_info = base_info[first_col + other_cols]
+    # print(base_info)
 
     hom_json = base_info.groupby(['id', 'alignment_length', 'members']).apply(
         lambda x: x.iloc[:, 3:].to_dict('records')[0]).reset_index().rename(columns={0: 'metadata'}).to_json(
@@ -123,4 +143,7 @@ def create_homologies(pangenome_path, panva_p, df_aligned_filt, hom_classified, 
 
     with open(os.path.join(panva_p, 'homologies.json'), 'w', encoding='utf-8') as new_json:
         json.dump(json.loads(hom_json), new_json, indent=2, ensure_ascii=False)
+    # homologies_df = pd.merge(homologies_df, homid_align_len, on='id')
+    # homologies_json = homologies_df.to_dict('records')
+    # print(homologies_json)
     return base_info
