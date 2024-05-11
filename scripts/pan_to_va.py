@@ -98,17 +98,15 @@ def main():
     print("Minimum number of unique members required in a homology group {}".format(min_num_uniq))
 
     msa_type = config.get('MSA', 'msa_type')
+    if config.getboolean('MSA', 'trimmed'):
+        trimmed = "_trimmed"
+    else:
+        trimmed = ""
 
     if msa_type == 'msa_per_group_var':
-        print("Currently under development to add annotations of ref genomes might cause breaks")
-        euk_ref = True
+        seqtyping = 'var'
     else:
-        euk_ref = False
-
-    if euk_ref == True:
-        seqtyping = 'var_trimmed'
-    else:
-        seqtyping = 'nuc_trimmed'
+        seqtyping = 'nuc'
 
     # HOMOLOGY settings:
     selection = config.get('HOMOLOGY', 'selection')
@@ -133,7 +131,7 @@ def main():
     # start a multiprocess run get align_info of every groups
     with Pool(core_count) as pool_1:
         # get_alignment_info found in: alignment_stats.py
-        alignment_info = pool_1.starmap(get_alignment_info, zip(grp_id_list, repeat(seqtyping)))
+        alignment_info = pool_1.starmap(get_alignment_info, zip(grp_id_list, repeat(seqtyping), repeat(trimmed)))
     pool_1.close()
 
     # report settings used during the run
@@ -171,7 +169,8 @@ def main():
     with Pool(core_count) as pool_2:
         # prep_group_pheno found in run_per_group.py
         meta_info = pool_2.starmap(prep_group_pheno, tqdm.tqdm(zip(id_list_filt, repeat(panva_path), repeat(seqtyping),
-                                                         repeat(pheno_spvar), repeat(df_phenos), repeat(acc_meta_df)), total=len(id_list_filt)))
+                                                         repeat(pheno_spvar), repeat(df_phenos), repeat(acc_meta_df),
+                                                                   repeat(trimmed)), total=len(id_list_filt)))
     pool_2.close()
 
     indiv_time = datetime.now()
@@ -188,7 +187,7 @@ def main():
     print("Making annotations.csv, last pre-processing step.")
     print("Note progress bar*: Updates on next group start not on group done")
     with Pool(core_count) as pool_3:
-        pool_3.starmap(pool3wrap, tqdm.tqdm(zip(id_list_filt, repeat(panva_path), repeat(msa_type)),
+        pool_3.starmap(pool3wrap, tqdm.tqdm(zip(id_list_filt, repeat(panva_path), repeat(msa_type), repeat(trimmed)),
                                             total=len(id_list_filt)))
     pool_3.close()
     annot_time = datetime.now()

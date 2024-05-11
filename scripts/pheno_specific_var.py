@@ -16,7 +16,7 @@ import logging
 from functools import reduce
 # Function(s):
 
-def add_pheno_specificity(single_id_path, al_pos, phenos_df, pheno_var=None):
+def add_pheno_specificity(single_id_path, al_pos, phenos_df, pheno_var=None, trimmed="_trimmed"):
     """
 
     :param single_id_path:
@@ -45,10 +45,7 @@ def add_pheno_specificity(single_id_path, al_pos, phenos_df, pheno_var=None):
     # place a check if the phenotype from file name matches the phenotypes in the pheno_df
     phenovar_fullpath = []
     for pheno in pheno_var_file_id:
-        #print(pheno)
-        #pheno_out_folder = os.path.join(hom_id_output)
         path_to_pheno_out = os.path.join(hom_id_output, pheno)
-        #print(path_to_pheno_out)
         phenovar_fullpath.append(os.path.join(path_to_pheno_out))
 
     # merge aligned pos information with phenotype information
@@ -61,22 +58,18 @@ def add_pheno_specificity(single_id_path, al_pos, phenos_df, pheno_var=None):
     pheno_holding_list = []
 
     # change it to the list phenovar_fullpath
-    seq_type = 'nuc_trimmed'
     only_nuc_files = []
     for file in phenovar_fullpath:
         only_nuc_files.append(file)
-    #for file in phenovar_fullpath:
-    #    if seq_type in file:
-    #        only_nuc_files.append(file)
 
     # for all files check which match the file naming scheme.
     for file in only_nuc_files:
         pheno_id = file.rsplit("/", 1)[1]
         # keeping only the phenotype key word
         if file.startswith("nuc_"):
-            pheno_id = pheno_id.split("nuc_trimmed_")[1]
+            pheno_id = pheno_id.split("nuc{}_".format(trimmed))[1]
         elif file.startswith("var_"):
-            pheno_id = pheno_id.split("var_trimmed_")[1]
+            pheno_id = pheno_id.split("var{}_".format(trimmed))[1]
         pheno_id = pheno_id.rsplit("_", 1)[0]
 
         # make column indicator from the pheno_id
@@ -97,8 +90,6 @@ def add_pheno_specificity(single_id_path, al_pos, phenos_df, pheno_var=None):
         spec_pheno_align[col_pheno] = spec_pheno_align['specific'].fillna(spec_pheno_align['exclusive'])
 
         # if required option to change None fill here
-        # print("yes this is spec_align")
-        # print(spec_pheno_align)
         # drop the temp columns
         spec_pheno_align = spec_pheno_align.drop(columns=['exclusive', 'specific', pheno_id], axis=1, errors='ignore')
 
@@ -118,6 +109,5 @@ def add_pheno_specificity(single_id_path, al_pos, phenos_df, pheno_var=None):
     # combine the individual phenotype dataframes
     al_pos_all_pheno = reduce(lambda df1, df2: pd.merge(df1, df2, how='outer'), pheno_hold_2)
     all_pos_all_pheno = pd.merge(al_pos, al_pos_all_pheno, how='outer')
-    # print("actual all pos with pheno aligned /n", all_pos_all_pheno)
     # return to make alignments
     return all_pos_all_pheno

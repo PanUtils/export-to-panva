@@ -18,7 +18,7 @@ from collections import defaultdict
 # Functions:
 
 
-def create_var_pos_df(single_id, panva_p, df_all_pos, pheno=None, version='old'):
+def create_var_pos_df(single_id, panva_p, df_all_pos, pheno=None, version='old', trimmed='_trimmed'):
 
     # identify single id
     hom_id = single_id.rsplit('/', 1)[1]
@@ -26,17 +26,19 @@ def create_var_pos_df(single_id, panva_p, df_all_pos, pheno=None, version='old')
     hom_id_out = os.path.join(panva_p, hom_id)
     # path to data
     # had to do it this way because some versions used old naming convention (nuc vs nucleotide)
-    var_df_path = os.path.join(single_id, "output/var_inf_positions/nuc_trimmed_variable_positions.csv")
+    var_df_path = os.path.join(single_id, "output/var_inf_positions/nuc{}_variable_positions.csv".format(trimmed))
     if not os.path.isfile(var_df_path):
-        var_df_path = os.path.join(single_id, "output/var_inf_positions/nucleotide_trimmed_variable_positions.csv")
+        var_df_path = os.path.join(single_id,
+                                   "output/var_inf_positions/nucleotide{}_variable_positions.csv".format(trimmed))
     if not os.path.isfile(var_df_path):
-        var_df_path = os.path.join(single_id, "output/var_inf_positions/variants_trimmed_variable_positions.csv")
+        var_df_path = os.path.join(single_id,
+                                   "output/var_inf_positions/variants{}_variable_positions.csv".format(trimmed))
     meta_info = []
     #print(single_id)
     if version == 'old' and pheno is None:
         #df_var_pos = pd.read_csv(var_df_path)
         if not os.path.isfile(var_df_path):
-            print("the file nuc_trimmed_variable_pos... does not exist for{}".format(hom_id))
+            print("the file nuc_trimmed_variable_pos... does not exist for {}".format(hom_id))
         df_var_pos = pd.read_csv(var_df_path)
         # print(hom_id)
 

@@ -110,7 +110,7 @@ def seq_df_maker(fasta_path):
     return df_sequences
 
 
-def merge_sequences(single_id_path, panva_path, method='nuc_trimmed'):
+def merge_sequences(single_id_path, panva_path, method='nuc', trimmed = "_trimmed"):
     """
     Combines all sequence information in a homology group into a single dataframe.
 
@@ -135,12 +135,8 @@ def merge_sequences(single_id_path, panva_path, method='nuc_trimmed'):
                 hold_fasta_path.append(os.path.join(single_id_output_path, file))
             else:
                 pass
-    elif method == 'nuc_trimmed':
-        hold_fasta_path.append(os.path.join(single_id_path, "output/nuc_trimmed.fasta"))
-    elif method == 'var_trimmed':
-        hold_fasta_path.append(os.path.join(single_id_path, "output/var_trimmed.fasta"))
     else:
-        raise ValueError("The method for fasta sequence merging should be 'all' or 'nuc_trimmed'.")
+        hold_fasta_path.append(os.path.join(single_id_path, "output/{}{}.fasta".format(method, trimmed)))
 
     all_fasta_list = []
     for file in hold_fasta_path:
@@ -151,7 +147,7 @@ def merge_sequences(single_id_path, panva_path, method='nuc_trimmed'):
 
     # with the newest version of PanTools new prefixes are introduced however PanVA does not have these
     # Therefore here we have to overwrite the sequencetype (for now)
-    if method == 'var_trimmed':
+    if method == 'var{}'.format(trimmed):
         df_all_sequences.rename(columns={'var_trimmed_seq': 'nuc_trimmed_seq'}, inplace=True)
 
     df_all_sequences.to_csv(os.path.join(panva_out, 'sequences.csv'), index=False)

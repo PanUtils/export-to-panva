@@ -9,10 +9,11 @@
 import os
 import pandas as pd
 import numpy as np
+import re
 # Functions:
 
 
-def genome_annotation(single_path, panva_p, msa_type):
+def genome_annotation(single_path, msa_type, trimmed="_trimmed"):
     """
     If the reference genomes have VCF files collect this information
 
@@ -21,10 +22,21 @@ def genome_annotation(single_path, panva_p, msa_type):
     :return: list and Dataframe with reference genome information on CDS/exon/intron.
     """
 
-    # get hom id and make output path
-    hom_id = single_path.rsplit('/', 1)[1]
-    # panva out path
-    panva_out = os.path.join(panva_p, hom_id)
+    if trimmed == "":
+        df_trimmed = create_empty_trimmed_info(single_path)
+    else:
+        df_trimmed = read_trimmed_info(single_path, msa_type)
+
+    # get just the ref genomes
+    lst_refs = [i for i in df_trimmed['mRNA_id'].to_list() if '|' not in i]
+    # lst_refs_new = [i for i in df_trimmed['mRNA_id'].to_list() if '|' not in i]
+
+    # subset information from df
+    df_ref_trimmed = df_trimmed[df_trimmed['mRNA_id'].isin(lst_refs)]
+
+    return lst_refs, df_ref_trimmed
+
+def read_trimmed_info(single_path, msa_type):
     # get the hom group id and add required file to path
     if msa_type == 'msa_per_group_var':
         hom_trimm_inf_path = os.path.join(single_path, "input/var_trimmed.info")
@@ -38,7 +50,7 @@ def genome_annotation(single_path, panva_p, msa_type):
     counter = 1
     for line in trim_lines:
         counter += 1
-        # different PanTools versions pangenomes going around no consistent end nor parse line 
+        # different PanTools versions pangenomes going around no consistent end nor parse line
         if line.startswith("Total") or line.startswith("#Total"):
             break
 
@@ -47,14 +59,7 @@ def genome_annotation(single_path, panva_p, msa_type):
     accessions = []
     trim_start = []
     trim_stop = []
-    # for i in no_head_trim:
-    #     accessions.append(i.split(':')[0])
-    #
-    #     nrs = i.split(':')[1].strip('\n').split(',')
-    #     start = nrs[0].strip(' ')
-    #     end = nrs[1].strip(' ')
-    #     trim_start.append(start)
-    #     trim_stop.append(end)
+
     for i in no_head_trim:
 
         segments = i.strip('\n').split(',')
@@ -70,14 +75,33 @@ def genome_annotation(single_path, panva_p, msa_type):
     df_trimmed['mRNA_id'] = accessions
     df_trimmed['start'] = trim_start
     df_trimmed['stop'] = trim_stop
-    # get just the ref genomes
-    lst_refs = [i for i in df_trimmed['mRNA_id'].to_list() if '|' not in i]
-    # lst_refs_new = [i for i in df_trimmed['mRNA_id'].to_list() if '|' not in i]
 
-    # subset information from df
-    df_ref_trimmed = df_trimmed[df_trimmed['mRNA_id'].isin(lst_refs)]
+    return df_trimmed
 
-    return lst_refs, df_ref_trimmed
+def create_empty_trimmed_info(single_path):
+    # get the hom group id and add required file to path
+    genome_order_file = os.path.join(single_path, "input/genome_order.info")
+
+    accessions = []
+    trim_start = []
+    trim_stop = []
+
+    with open(genome_order_file, 'r') as file:
+        genome_order = file.readlines()
+    file.close()
+    for line in genome_order:
+        if re.match(r"^\d+.*$", line):
+            accessions.append(line.strip('\n').split(',')[1])
+            trim_start.append(0)
+            trim_stop.append(0)
+
+
+    df_trimmed = pd.DataFrame()
+    df_trimmed['mRNA_id'] = accessions
+    df_trimmed['start'] = trim_start
+    df_trimmed['stop'] = trim_stop
+
+    return df_trimmed
 
 
 def genome_annot_al_pos(single_path, panva_p, lst_refs, df_ref_trimmed):
@@ -220,7 +244,7 @@ def genome_annot_al_pos(single_path, panva_p, lst_refs, df_ref_trimmed):
     return
 
 
-def pool3wrap(single_id_path, panva_path, msa_type):
+def pool3wrap(single_id_path, panva_path, msa_type, trimmed="_trimmed"):
     """
     Wrapper function to make use of multiprocessing. executes genome_annotation.
 
@@ -229,7 +253,7 @@ def pool3wrap(single_id_path, panva_path, msa_type):
     :return:
     """
 
-    ref_list, df_refs = genome_annotation(single_id_path, panva_path, msa_type)
+    ref_list, df_refs = genome_annotation(single_id_path, msa_type, trimmed=trimmed)
     genome_annot_al_pos(single_id_path, panva_path, ref_list, df_refs)
 
     return

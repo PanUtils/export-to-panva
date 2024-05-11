@@ -13,7 +13,7 @@ from include_pheno_info import *
 
 
 # ran in pool
-def prep_group_pheno(hom_id, panva_p, seqtype='nuc_trimmed', pheno_var=None, meta=None, var_meta=None):
+def prep_group_pheno(hom_id, panva_p, seqtype='nuc', pheno_var=None, meta=None, var_meta=None, trimmed="_trimmed"):
     """
     Flashes out the alignments for a homology group, by adding additional information if present.
 
@@ -29,7 +29,7 @@ def prep_group_pheno(hom_id, panva_p, seqtype='nuc_trimmed', pheno_var=None, met
     df_seq_info = create_seq_info(hom_id, panva_p)
 
     # makes sequences.csv
-    df_all_seq = merge_sequences(hom_id, panva_p, method=seqtype)
+    df_all_seq = merge_sequences(hom_id, panva_p, method=seqtype, trimmed=trimmed)
 
     all_info_seq = pd.merge(df_all_seq, df_seq_info, on=['mRNA_id'])
 
@@ -38,11 +38,13 @@ def prep_group_pheno(hom_id, panva_p, seqtype='nuc_trimmed', pheno_var=None, met
         # makes metadata.csv
         group_meta = hom_group_pheno(hom_id, panva_p, meta, df_seq_info, var_meta)
 
-        meta_info = alignment_posinfo(hom_id, panva_p, all_info_seq, method=seqtype, phe_var=pheno_var, meta=group_meta)
+        meta_info = alignment_posinfo(hom_id, panva_p, all_info_seq, phe_var=pheno_var, meta=group_meta,
+                                      seqtype=seqtype, trimmed=trimmed)
 
     # if meta is None and pheno var is None just do positions
     else:
         # print("prep_group: meta NOT present and pheno_var NOT present")
-        meta_info = alignment_posinfo(hom_id, panva_p, all_info_seq, method=seqtype, phe_var=pheno_var, meta=meta)
+        meta_info = alignment_posinfo(hom_id, panva_p, all_info_seq, phe_var=pheno_var, meta=meta, seqtype=seqtype,
+                                      trimmed=trimmed)
 
     return meta_info

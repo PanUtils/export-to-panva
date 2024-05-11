@@ -16,10 +16,3 @@ After activating the conda environment and filling out the config you can start 
 
 ``
 python3 path/to/pan_to_va.py path/to/config.ini
-``
-
-### Disclaimers:
-
-Some of the tests sets have older file versions which can cause errors. If users want to use these older
-versions, you need to manually indicate the version of the files in the scripts. 
-Support for the older PanTools file versions is going to be removed in future..

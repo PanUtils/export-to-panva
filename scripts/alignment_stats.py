@@ -14,7 +14,7 @@ import logging
 # Functions:
 
 
-def get_alignment_info(single_id_path, seqtype='nuc_trimmed'):
+def get_alignment_info(single_id_path, seqtype='nuc', trimmed="_trimmed"):
     """
     Gathers alignment info for building the homologies.json and to filter on alignment statistics later.
     *Used in pool to speed up the process.
@@ -22,15 +22,13 @@ def get_alignment_info(single_id_path, seqtype='nuc_trimmed'):
     :param single_id_path: full path to a single homology group in the alignments extension
     :return: list of the alignment stats for the homology group
     """
-    # keep just the id part
-    single_id = single_id_path.rsplit('/', 1)[1]
     # add the correct extension to output/nuc_trimmed_alignment.info
-    if seqtype == 'nuc_trimmed':
-        single_id_align_info = os.path.join(single_id_path, "output/nuc_trimmed_alignment.info")
+    if seqtype == 'nuc':
+        single_id_align_info = os.path.join(single_id_path, "output/nucleotide{}_alignment.info".format(trimmed))
         if not os.path.exists(single_id_align_info):
-            single_id_align_info = os.path.join(single_id_path, "output/nucleotide_trimmed_alignment.info")
-    elif seqtype == 'var_trimmed':
-        single_id_align_info = os.path.join(single_id_path, "output/variants_trimmed_alignment.info")
+            single_id_align_info = os.path.join(single_id_path, "output/nuc{}_alignment.info".format(trimmed))
+    elif seqtype == 'var':
+        single_id_align_info = os.path.join(single_id_path, "output/variants{}_alignment.info".format(trimmed))
     else:
         raise ValueError("Issue in finding the correct '[]_alignment.info' file. nuc_trimmed or variants_trimmed")
 
@@ -53,6 +51,8 @@ def get_alignment_info(single_id_path, seqtype='nuc_trimmed'):
     num_inf_pos = informative_lines[4].strip()
     num_inf_pos = int(num_inf_pos.split(':')[1])
 
+    # keep just the id part
+    single_id = single_id_path.rsplit('/', 1)[1]
     combined_align_info = [single_id, num_seq, num_genomes, align_len, num_var_pos, num_inf_pos]
     return combined_align_info
 
