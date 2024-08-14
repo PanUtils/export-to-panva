@@ -29,7 +29,8 @@ def alignment_posinfo(single_id, panva_p, all_seq_all_info, phe_var=None, meta=N
     # list to hold temp dataframes
     holding_tmp_df = []
 
-    method = seqtype + trimmed + "_seq"
+    # define method and if needed rename seqtype to "nuc"
+    method = ("nuc" if seqtype == "var" else seqtype) + trimmed + "_seq"
 
     # all_seq_all_info = pd.merge(df_all_seq, df_seq_info, on=['mRNA_id'])
     for mrna_id in all_seq_all_info['mRNA_id']:
