@@ -5,7 +5,6 @@
 # WUR - Bioinformatics
 # Functionality:
 # Script is used to pre-process PanTools pangenomes for variant analysis in PanVA.
-#
 
 # Imports:
 from datetime import datetime
@@ -31,9 +30,13 @@ from pheno_specific_var import *
 from include_pheno_info import *
 from make_alignments import *
 from collect_pantools_data import *
+from process_newick_trees import *
+from config_logger import *
+
+# Use logger from config_logger.py
+logger = logging.getLogger("export-to-panva")
+
 # Functions:
-
-
 def main():
     """
     Main function of the pre-processing scripts. It is used to pre-process a PanTools pangenome for
@@ -53,7 +56,8 @@ def main():
                         datefmt='%m/%d/%Y %I:%M:%S %p', filemode='a', level=logging.DEBUG)
     logging.info('Pre-processing started.')
     logging.info("Configuration file used: '{}'.".format(str(sys.argv[1])))
-    # GENERAL settings
+
+    # GENERAL settings:
     # Set PanTools database location from config
     pangenome_path = config.get('GENERAL', 'pangenome_path')
     pangenome_name = os.path.basename(os.path.normpath(pangenome_path))
@@ -71,7 +75,7 @@ def main():
         pass
     panva_path = os.path.join(panva_dir_path, "homology")
     # panva_path = os.path.join(panva_path, panva_dir_name)
-    print(panva_path)
+    logger.info(f"Output path: {panva_path}")
     try:
         os.mkdir(panva_path)
     except FileExistsError:
@@ -87,15 +91,15 @@ def main():
     else:
         logging.info("Number of cores used '{}'".format(core_count))
 
-    # MSA settings:
+    # MSA SETTINGS:
     min_align = config.getint('MSA', 'min_align_len')
-    print("Minimum alignment length of {}".format(min_align))
+    logger.info("Minimum alignment length of {}".format(min_align))
 
     min_num_memb = config.getint('MSA', 'min_num_members')
-    print("Minimum number of members required in a homology group {}".format(min_num_memb))
+    logger.info("Minimum number of members required in a homology group {}".format(min_num_memb))
     min_num_uniq = config.getint('MSA', 'min_uniq_members')
 
-    print("Minimum number of unique members required in a homology group {}".format(min_num_uniq))
+    logger.info("Minimum number of unique members required in a homology group {}".format(min_num_uniq))
 
     msa_type = config.get('MSA', 'msa_type')
     if config.getboolean('MSA', 'trimmed'):
@@ -116,11 +120,11 @@ def main():
     pheno_spvar = config.get('PHENOMETA', 'pheno_var')
     if pheno_spvar == '' or pheno_spvar == ' ':
         pheno_spvar = None
-        print("pheno_var is 'None'")
+        logger.info("pheno_var is 'None'")
 
     acc_meta = config.get('PHENOMETA', 'reseq_meta')
 
-    # GENE CLASSIFICATION SETTINGS
+    # GENE CLASSIFICATION settings:
     gene_class = str(config.get('GENE_CLASS', 'classification'))
     gene_class_path = os.path.join(pangenome_path, gene_class)
     gene_class_path = os.path.join(gene_class_path, "classified_groups.csv")
@@ -150,14 +154,14 @@ def main():
     logging.info("Time spend gathering and filtering the pangenome data {}.".format(filter_time - start_run))
 
     if inc_pheno == True:
-        print('Include phenotype and metadata')
+        logger.info('Include phenotype and metadata')
         # makes df for all genomes linking meta and pheno data.
         df_phenos = pheno_meta_maker(pangenome_path)
     else:
         df_phenos = None
     # check if accession meta data is given/exists
     if os.path.isfile(acc_meta):
-        print('Include phenotype and metadata of accessions')
+        logger.info('Include phenotype and metadata of accessions')
         acc_meta_df = pd.read_csv(acc_meta)
         # check if the column accession_id exists as is expected
     elif acc_meta == '' or acc_meta == ' ':
@@ -165,7 +169,7 @@ def main():
     else:
         raise ValueError("the given path to accession meta/pheno data does not exist or is not empty in config.")
 
-    print("Note progress bar*: Updates on next group start not on group done")
+    print("*Note progress bar: Updates on next group start not on group done")
     with Pool(core_count) as pool_2:
         # prep_group_pheno found in run_per_group.py
         meta_info = pool_2.starmap(prep_group_pheno, tqdm.tqdm(zip(id_list_filt, repeat(panva_path), repeat(seqtyping),
@@ -175,7 +179,7 @@ def main():
 
     indiv_time = datetime.now()
     logging.info('Time passed making all individual homology group files: {}'.format(indiv_time - filter_time))
-    print("Creating homologies.json")
+    logger.info("Creating homologies.json")
     id_class = gene_classification(gene_class_path, id_list_filt)
     if pheno_spvar is not None:
         create_homologies(pangenome_path, panva_path, df_aligned, id_class, pheno_var=meta_info)
@@ -183,62 +187,35 @@ def main():
         create_homologies(pangenome_path, panva_path, df_aligned, id_class, pheno_var=None)
     json_time = datetime.now()
     logging.info('Time passed making homologies.json: {}'.format(json_time - indiv_time))
-    # DEV
-    print("Making annotations.csv, last pre-processing step.")
-    print("Note progress bar*: Updates on next group start not on group done")
+
+    # Annotations
+    logger.info("Making annotations.csv, last pre-processing step.")
+    print("*Note progress bar: Updates on next group start not on group done")
     with Pool(core_count) as pool_3:
         pool_3.starmap(pool3wrap, tqdm.tqdm(zip(id_list_filt, repeat(panva_path), repeat(msa_type), repeat(trimmed)),
                                             total=len(id_list_filt)))
     pool_3.close()
     annot_time = datetime.now()
     logging.info('Time passed making annotation(s) files for the homology groups: {}'.format(annot_time-json_time))
-    print("Finished making the annotation(s) files")
-    # Check for trees
-    print("Check if any trees are present")
-    # folders = os.listdir(pangenome_path)
-    # folders.remove('alignments')
-    for folder in os.walk(pangenome_path):
-        # look in all folders except for alignment too many files and no trees can be here
-        if 'alignment' in folder[0]:
-            pass
-        elif 'core_snp_tree' in folder[0]:
-            addition = "informative.fasta.treefile"
-            core_snp_path = os.path.join(folder[0], addition)
-            out_core_snp = os.path.join(panva_path, "core_snp.txt")
-            try:
-                shutil.copyfile(core_snp_path, out_core_snp)
-            except FileNotFoundError:
-                pass
-        elif 'gene_classification' in folder[0]:
-            tree_file = 'gene_distance.tree'
-            core_snp_path = os.path.join(folder[0], tree_file)
-            out_core_snp = os.path.join(panva_path, "gene_distance.txt")
-            try:
-                shutil.copyfile(core_snp_path, out_core_snp)
-            except FileNotFoundError:
-                pass
-        elif 'kmer_classification' in folder[0]:
-            kmr_tree = 'genome_kmer_distance.tree'
-            core_snp_path = os.path.join(folder[0], kmr_tree)
-            out_core_snp = os.path.join(panva_path, "kmer_gene_distance.txt")
-            try:
-                shutil.copyfile(core_snp_path, out_core_snp)
-            except FileNotFoundError:
-                pass
-        elif 'ANI' in folder[0]:
-            ani_tree = 'MASH/ANI.newick'
-            core_snp_path = os.path.join(folder[0], ani_tree)
-            out_core_snp = os.path.join(panva_path, "ANI.txt")
-            try:
-                shutil.copyfile(core_snp_path, out_core_snp)
-            except FileNotFoundError:
-                pass
-        # else:
-        #     for file in glob.glob(os.path.join(folder[0], '*.newick')):
-        #         shutil.copyfile(file, panva_path)
+    logger.info("Finished making the annotation(s) files")
+
+    # Trees
+    logger.info("Include trees if present")
+    # Dictionary mapping tree types to their respective subdirectories and filenames
+    tree_mappings = {
+        'gene_distance': ('gene_classification', 'genome_gene_distance.tree', 'gene_distance.txt'),
+        'kmer_distance': ('kmer_classification', 'genome_kmer_distance.tree', 'kmer_distance.txt'),
+        'ani': ('ANI/MASH', 'ANI.newick', 'ANI.txt'),
+        'core_snp': ('core_snp_tree', 'informative.fasta.treefile', 'core_snp.txt'),
+    }
+    for tree_name in config['TREES']:
+        if config.getboolean('TREES', tree_name):
+            if tree_name in tree_mappings:
+                mapping = tree_mappings[tree_name]
+                worker(pangenome_path, panva_path, mapping)
 
     final_time = datetime.now()
-    print("Done")
+    logger.info("Process completed")
     logging.info("Total time passed: {} \n".format(final_time - start_run))
     return
 
