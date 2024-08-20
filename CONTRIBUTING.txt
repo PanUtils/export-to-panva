@@ -1,0 +1,17 @@
+Original implementation:
+  Sander Vlugter
+
+Documentation:
+  Sander Vlugter
+
+Large code contributions:
+  Robin van Esch <robinbvanesch@gmail.com>
+
+Patch contributors:
+  Dirk Jan van Workum
+    * Added gitignore
+    * Updated dependencies
+    * Bugfixes
+  Astrid van den Brand
+    * Bugfixes
+    * Added tree processing
