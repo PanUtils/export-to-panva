@@ -16,3 +16,4 @@ After activating the conda environment and filling out the config you can start 
 
 ``
 python3 path/to/pan_to_va.py path/to/config.ini
+``
