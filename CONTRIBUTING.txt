@@ -12,6 +12,6 @@ Patch contributors:
     * Added gitignore
     * Updated dependencies
     * Bugfixes
-  Astrid van den Brand
+  Astrid van den Brandt
     * Bugfixes
     * Added tree processing
