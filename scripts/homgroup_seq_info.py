@@ -147,8 +147,10 @@ def merge_sequences(single_id_path, panva_path, method='nuc', trimmed = "_trimme
 
     # with the newest version of PanTools new prefixes are introduced however PanVA does not have these
     # Therefore here we have to overwrite the sequencetype (for now)
-    if method == 'var{}'.format(trimmed):
-        df_all_sequences.rename(columns={'var_trimmed_seq': 'nuc_trimmed_seq'}, inplace=True)
+    # if method == 'var{}'.format(trimmed):
+    #     df_all_sequences.rename(columns={'var_trimmed_seq': 'nuc_trimmed_seq'}, inplace=True)
+    if method == 'var' and trimmed:
+         df_all_sequences.rename(columns={'var_trimmed_seq': 'nuc_trimmed_seq'}, inplace=True)
 
     df_all_sequences.to_csv(os.path.join(panva_out, 'sequences.csv'), index=False)
 
